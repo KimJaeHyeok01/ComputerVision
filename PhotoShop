@@ -1,12 +1,12 @@
 import sys
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 from PySide6.QtGui import QAction, QImage, QPixmap
 from PySide6.QtWidgets import (
     QApplication, QWidget, QLabel, QMainWindow, 
     QHBoxLayout, QVBoxLayout, QPushButton, QFileDialog
 )
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -25,20 +25,47 @@ class MainWindow(QMainWindow):
         # 사이드바 메뉴버튼
         sidebar = QVBoxLayout()
         button1 = QPushButton("이미지 열기")
-        button2 = QPushButton("좌우반전")
-        button3 = QPushButton("상하반전")
-        button4 = QPushButton("흑백")
-        button5 = QPushButton("마스킹")
-        button6 = QPushButton("새로고침")
-        button7 = QPushButton("리셋")
+        button2 = QPushButton("새로고침")
+        button3 = QPushButton("리셋")
+        button4 = QPushButton("좌우반전")
+        button5 = QPushButton("상하반전")
+        button6 = QPushButton("확대")
+        button7 = QPushButton("색상반전")
+        button8 = QPushButton("흑백반전")
+        button9 = QPushButton("마스킹")
+        button10 = QPushButton("볼록렌즈")
+        button11 = QPushButton("오목렌즈")
+        button12 = QPushButton("블러")
+        button13 = QPushButton("가우시안 블러")
+        button14 = QPushButton("미디안 블러")
+        button15 = QPushButton("바이래터럴 필터")
+        button16 = QPushButton("로버츠 교차 필터")
+        button17 = QPushButton("소벨 필터")
+        button18= QPushButton("얼굴 모자이크")
+        
+        
         
         button1.clicked.connect(self.show_file_dialog)
-        button2.clicked.connect(self.flip_image_horizontally)
-        button3.clicked.connect(self.flip_image_vertically)
-        button4.clicked.connect(self.black_white_image)
-        button5.clicked.connect(self.masked_image)
-        button6.clicked.connect(self.clear_label)
-        button7.clicked.connect(self.reset_image)
+        button2.clicked.connect(self.clear_label)
+        button3.clicked.connect(self.reset_image)
+        button4.clicked.connect(self.flip_image_horizontally)
+        button5.clicked.connect(self.flip_image_vertically)
+        button6.clicked.connect(self.bigger_image)
+        button7.clicked.connect(self.reverse_color_image)
+        button8.clicked.connect(self.black_white_image)
+        button9.clicked.connect(self.masked_image)
+        button10.clicked.connect(self.convex_image)
+        button11.clicked.connect(self.concave_image)
+        button12.clicked.connect(self.blur)
+        button13.clicked.connect(self.gaussian_blur)
+        button14.clicked.connect(self.median_blur)
+        button15.clicked.connect(self.bilateral_filter)
+        button16.clicked.connect(self.roberts_filter)
+        button17.clicked.connect(self.sobel_filter)
+        button18.clicked.connect(self.face_mozaic)
+        
+       
+        
         
         sidebar.addWidget(button1)
         sidebar.addWidget(button2)
@@ -47,6 +74,19 @@ class MainWindow(QMainWindow):
         sidebar.addWidget(button5)
         sidebar.addWidget(button6)
         sidebar.addWidget(button7)
+        sidebar.addWidget(button8)
+        sidebar.addWidget(button9)
+        sidebar.addWidget(button10)
+        sidebar.addWidget(button11)
+        sidebar.addWidget(button12)
+        sidebar.addWidget(button13)
+        sidebar.addWidget(button14)
+        sidebar.addWidget(button15)
+        sidebar.addWidget(button16)
+        sidebar.addWidget(button17)
+        sidebar.addWidget(button18)
+
+        
 
         main_layout.addLayout(sidebar)
 
@@ -65,6 +105,7 @@ class MainWindow(QMainWindow):
     def show_file_dialog(self):
         file_name = QFileDialog.getOpenFileName(self, "이미지 열기", "./")
         self.image = cv2.imread(file_name[0])
+        
         h, w, _ = self.image.shape
         bytes_per_line = 3 * w
         image = QImage(
@@ -72,9 +113,17 @@ class MainWindow(QMainWindow):
         ).rgbSwapped()
         pixmap = QPixmap(image)
         self.label1.setPixmap(pixmap)    
+        
+    def clear_label(self):
+        self.label2.clear()
+
+    def reset_image(self):
+        self.label1.clear()
+        self.label2.clear()
     
     def flip_image_horizontally(self):
         image = cv2.flip(self.image, 1)
+        
         h, w, _ = image.shape
         bytes_per_line = 3 * w
         image = QImage(
@@ -85,6 +134,7 @@ class MainWindow(QMainWindow):
         
     def flip_image_vertically(self):
         image = cv2.flip(self.image, 0)
+        
         h, w, _ = image.shape
         bytes_per_line = 3 * w
         image = QImage(
@@ -93,36 +143,223 @@ class MainWindow(QMainWindow):
         pixmap = QPixmap(image)
         self.label2.setPixmap(pixmap)
 
-    def black_white_image(self):
-        image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-        h, w = image.shape
+    def bigger_image(self):
+        image = cv2.resize(self.image, None,  None, 2, 2, cv2.INTER_CUBIC)
+        
+        h, w, _ = image.shape
+        bytes_per_line = 3 * w
         image = QImage(
-            image.data, w, h, QImage.Format_Grayscale8
-        )
+            image.data, w, h, bytes_per_line, QImage.Format_RGB888
+        ).rgbSwapped()
+        pixmap = QPixmap(image)
+        self.label2.setPixmap(pixmap)
+      
+    def reverse_color_image(self):
+        image = cv2.bitwise_not(self.image)
+        
+        h, w, _ = image.shape
+        bytes_per_line = 3 * w
+        image = QImage(
+            image.data, w, h, bytes_per_line, QImage.Format_RGB888
+        ).rgbSwapped()
+        pixmap = QPixmap(image)
+        self.label2.setPixmap(pixmap)
+        
+    def black_white_image(self):
+        image = cv2.cvtColor(self.image, cv2.COLOR_RGB2GRAY)
+        
+        h, w = image.shape
+        byte_per_line = 1 * w
+        image = QImage(
+            image.data, w, h, byte_per_line, QImage.Format_Grayscale8)
         pixmap = QPixmap(image)
         self.label2.setPixmap(pixmap)
         
     def masked_image(self):
-        mask = np.zeros_like(self.image)
-        center = (w // 2, h // 2)
-        cv2.circle(mask, center, 250, (255, 255, 255), -1)
-        image = cv2.bitwise_and(self.image, self.image, mask=mask)
-        h, w = image.shape
+        image = self.image
+        h, w = image.shape[:2]
+        mask = np.zeros_like(image)
+        cv2.circle(mask, (int(w/2), int(w/2)), int(w/2), (255, 255, 255), -1)
+        image = cv2.bitwise_and(image, mask)
+        
+        bytes_per_line = 3 * w
         image = QImage(
-            image.data, w, h, QImage.Format_RGB888
+            image.data, w, h, bytes_per_line, QImage.Format_RGB888
         ).rgbSwapped()
         pixmap = QPixmap(image)
         self.label2.setPixmap(pixmap)
-    
-    def clear_label(self):
-        self.label2.clear()
+            
+    def convex_image(self):
+        image = self.image
+        h, w = image.shape[:2]
+        exp = 2
+        scale = 1
+        mapy, mapx = np.indices((h, w), dtype=np.float32)
 
-    def reset_image(self):
-        self.label1.clear()
-        self.label2.clear()
+        mapx = 2 * mapx / (w - 1) -1
+        mapy = 2 * mapy / (h - 1) -1
+
+        r, theta = cv2.cartToPolar(mapx, mapy) 
+        r[r < scale] = r[r < scale] ** exp 
+
+        mapx, mapy = cv2.polarToCart(r, theta) 
+        mapx = ((mapx + 1) * w - 1) /2 
+        mapy = ((mapy + 1) * h - 1) / 2 
+
+        image = cv2.remap(image, mapx, mapy, cv2.INTER_LINEAR) 
+
+        bytes_per_line = 3 * w
+        image = QImage(
+            image.data, w, h, bytes_per_line, QImage.Format_RGB888
+        ).rgbSwapped()
+        pixmap = QPixmap(image)
+        self.label2.setPixmap(pixmap)
+
+    def concave_image(self):
+        image = self.image
+        h, w = image.shape[:2]
+        exp = 0.5
+        scale = 1
+        mapy, mapx = np.indices((h, w), dtype=np.float32)
+
+        mapx = 2 * mapx / (w - 1) -1
+        mapy = 2 * mapy / (h - 1) -1
+
+        r, theta = cv2.cartToPolar(mapx, mapy) 
+        r[r < scale] = r[r < scale] ** exp 
+
+        mapx, mapy = cv2.polarToCart(r, theta) 
+        mapx = ((mapx + 1) * w - 1) /2 
+        mapy = ((mapy + 1) * h - 1) / 2 
+
+        image = cv2.remap(image, mapx, mapy, cv2.INTER_LINEAR) 
+
+        bytes_per_line = 3 * w
+        image = QImage(
+            image.data, w, h, bytes_per_line, QImage.Format_RGB888
+        ).rgbSwapped()
+        pixmap = QPixmap(image)
+        self.label2.setPixmap(pixmap)
+            
+    def blur(self):
+        image = self.image
+        kernel = np.full((5, 5), 0.04)
+        image = cv2.filter2D(image, -1, kernel)
         
-   if __name__ == "__main__":
+        h, w, _ = image.shape
+        bytes_per_line = 3 * w
+        image = QImage(
+            image.data, w, h, bytes_per_line, QImage.Format_RGB888
+        ).rgbSwapped()
+        pixmap = QPixmap(image)
+        self.label2.setPixmap(pixmap)
+
+    def gaussian_blur(self):
+        image = self.image
+        kernel = np.array([[1, 2, 1], [2, 4, 2], [1, 2, 1]]) * (1/ 16)
+        image = cv2.filter2D(image, -1, kernel)
+        
+        h, w, _ = image.shape
+        bytes_per_line = 3 * w
+        image = QImage(
+            image.data, w, h, bytes_per_line, QImage.Format_RGB888
+        ).rgbSwapped()
+        pixmap = QPixmap(image)
+        self.label2.setPixmap(pixmap)
+
+    def median_blur(self):
+        image = self.image
+        image = cv2.medianBlur(image, 5)
+        
+        h, w, _ = image.shape
+        bytes_per_line = 3 * w
+        image = QImage(
+            image.data, w, h, bytes_per_line, QImage.Format_RGB888
+        ).rgbSwapped()
+        pixmap = QPixmap(image)
+        self.label2.setPixmap(pixmap)
+
+    def bilateral_filter(self):
+        image = self.image
+        image = cv2.bilateralFilter(image, 5, 75, 75)
+        
+        h, w, _ = image.shape
+        bytes_per_line = 3 * w
+        image = QImage(
+            image.data, w, h, bytes_per_line, QImage.Format_RGB888
+        ).rgbSwapped()
+        pixmap = QPixmap(image)
+        self.label2.setPixmap(pixmap)
+ 
+    def roberts_filter(self):
+        image = self.image
+        gx_kernel = np.array([[1, 0],[0, -1]]) 
+        gy_kernel = np.array([[0, 1],[-1, 0]]) 
+
+        edge_gx = cv2.filter2D(image, -1, gx_kernel)
+        edge_gy = cv2.filter2D(image, -1, gy_kernel)
+
+        image = edge_gx + edge_gy
+
+        h, w, _ = image.shape
+        bytes_per_line = 3 * w
+        image = QImage(
+            image.data, w, h, bytes_per_line, QImage.Format_RGB888
+        ).rgbSwapped()
+        pixmap = QPixmap(image)
+        self.label2.setPixmap(pixmap)
+
+    def sobel_filter(self):
+        image = self.image
+        gx_kernel = np.array([[-1, 0, 1],[-2, 0, 2], [-1, 0, 1]]) 
+        gy_kernel = np.array([[-1, -2, -1],[0, 0, 0], [1, 2, 1]]) 
+
+        edge_gx = cv2.filter2D(image, -1, gx_kernel)
+        edge_gy = cv2.filter2D(image, -1, gy_kernel)
+
+        image = edge_gx + edge_gy
+
+        h, w, _ = image.shape
+        bytes_per_line = 3 * w
+        image = QImage(
+            image.data, w, h, bytes_per_line, QImage.Format_RGB888
+        ).rgbSwapped()
+        pixmap = QPixmap(image)
+        self.label2.setPixmap(pixmap)
+        
+    def face_mozaic(self):
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades +"haarcascade_frontalface_default.xml")
+        image = cv2.resize(self.image, dsize=(0, 0), fx=1.0, fy=1.0, interpolation=cv2.INTER_LINEAR)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.2, 5)
+        for (x,y,w,h) in faces:
+            face_image = image[y:y+h, x:x+w]
+            face_image = cv2.resize(face_image, dsize=(0, 0), fx=0.05, fy=0.05)
+            face_image = cv2.resize(face_image, (w, h), interpolation=cv2.INTER_AREA)
+            image[y:y+h, x:x+h] = face_image
+            
+            h, w, _ = image.shape
+            bytes_per_line = 3 * w
+            image = QImage(
+                image.data, w, h, bytes_per_line, QImage.Format_RGB888
+            ).rgbSwapped()
+            pixmap = QPixmap(image)
+            self.label2.setPixmap(pixmap)
+        
+
+    
+
+
+
+
+
+if __name__ == "__main__":
     app = QApplication()
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
+
+
+
+
+
