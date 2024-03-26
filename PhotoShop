@@ -16,7 +16,7 @@ class MainWindow(QMainWindow):
         # 메뉴바 만들기
         self.menu = self.menuBar()
         self.menu_file = self.menu.addMenu("파일")
-        exit = QAction("나가기", self, triggered=qApp.quit)
+        exit = QAction("나가기", self, triggered=QApplication.quit)
         self.menu_file.addAction(exit)
 
         # 메인화면 레이아웃
@@ -346,20 +346,15 @@ class MainWindow(QMainWindow):
             pixmap = QPixmap(image)
             self.label2.setPixmap(pixmap)
         
-
-    
-
-
-
-
-
-if __name__ == "__main__":
-    app = QApplication()
+def run_application():
+    app = QApplication.instance() 
+    if app is None:  
+        app = QApplication([])
     window = MainWindow()
     window.show()
-    sys.exit(app.exec())
+    try:
+        sys.exit(app.exec())
+    except SystemExit:
+        pass
 
-
-
-
-
+run_application()
